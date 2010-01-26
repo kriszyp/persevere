@@ -1,0 +1,16 @@
+{
+	"name": "persevere",
+	"author": "Kris Zyp",
+	"dependencies": ["pintura"],
+	"contributors": [],
+	"keywords": [
+		"json",
+		"database",
+		"javascript",
+		"persistence",
+		"rest"
+	],
+	"githubName": "persevere",
+	"type": "zip",
+	"location": "http://github.com/kriszyp/persevere/zipball/master"
+}
