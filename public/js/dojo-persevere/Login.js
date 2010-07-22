@@ -17,10 +17,10 @@ dojo.declare("persevere.Login", dijit.Dialog,
     // added to the register dialog.
     //
     // example:
-    // |    <div dojoType="dojox.data.persevere.Login" userUrl="/Class/User"></div>
+    // |    <div dojoType="dojox.data.persevere.Login" userUrl="/User/"></div>
     //
     // example:
-    // |    var foo = new dojox.data.persevere.Login({userUrl: "/Class/User"});
+    // |    var foo = new dojox.data.persevere.Login({userUrl: "/User/"});
 	// |	dojo.body().appendChild(foo.domNode);
 	// |	foo.startup();
     
@@ -34,7 +34,7 @@ dojo.declare("persevere.Login", dijit.Dialog,
     // userUrl: String
     //        The url to the 'User' class.  This url is used to authenticate
     //        and create users.
-    userUrl: 'Class/User',
+    userUrl: 'User/',
     
     // loginHref: String
     //        The url to be used as the href to the login form.
@@ -148,7 +148,7 @@ dojo.declare("persevere.Login", dijit.Dialog,
             this._busy.attr("style", "display:block");
             dojo.xhrPost({
                 url: this.userUrl,
-                postData: dojo.toJson({method: this.loginMethod, id:"login", params:[form[this.userField], form[this.passField], this.cookieLength && new Date(new Date().getTime() + this.cookieLength).toGMTString()]}),
+                postData: dojo.toJson({method: this.loginMethod, id:"login", user: form[this.userField], password: form[this.passField], expires: this.cookieLength && new Date(new Date().getTime() + this.cookieLength).toGMTString()}),
                 handleAs: "json",
                 headers: {Accept:"application/javascript, application/json"},
                 load: dojo.hitch(this, "_loginLoad"),
@@ -226,7 +226,8 @@ dojo.declare("persevere.Login", dijit.Dialog,
                 postData: dojo.toJson({
                     method: this.loginMethod,
                     id: "logout",
-                    params: [null, null]
+                    user: null,
+                    password: null
                 }),
                 handleAs: "json",
                 handle: function(response, request){
