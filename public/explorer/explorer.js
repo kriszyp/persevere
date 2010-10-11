@@ -51,7 +51,11 @@ function startExplorer(){
 		var path = location.pathname.match(/(.*\/)[^\/]*$/)[1];
 		var storesDfd = dojox.data.PersevereStore.getStores(path); // persevere stores are auto-generated
 		storesDfd.addErrback(function(e){
-			alert("Could not load Persevere classes (Class table)." + (/404/.test(e.message) ? " Are you sure you are connected to Persevere and not just a generic web server like Apache?" : ""));
+			if(/416/.test(e.message) && !username){
+				signin();
+			}else{
+				alert("Could not load Persevere classes (Class table)." + (/404/.test(e.message) ? " Are you sure you are connected to Persevere and not just a generic web server like Apache?" : ""));
+			}
 		});
 		var cp = new dijit.layout.ContentPane({
             id: 'storeExplorer',
@@ -92,10 +96,12 @@ function startExplorer(){
 			}else if(activeClassName == 'User'){
 				// special handling for users
 				dojo.require("persevere.Login");
-			    var login = new persevere.Login({onLoginSuccess: function(){}});
-			    login._showLogin = function(){};// do nothing when it tries to show the login
-			    dojo.body().appendChild(login.domNode);
-			    login._showRegister();
+				dojo.addOnLoad(function(){
+				    var login = new persevere.Login({onLoginSuccess: function(){}});
+				    login._showLogin = function(){};// do nothing when it tries to show the login
+				    dojo.body().appendChild(login.domNode);
+				    login._showRegister();
+				});
 
 			}else if(activeClassName == 'File'){
 				var fileDialog = this._fileDialog;
@@ -148,7 +154,7 @@ function startExplorer(){
 				var accessLevel = prompt("What access level would you like to grant (none, limited, read, execute, append, write, or full)?","full");
 				if(accessLevel){	
 					dojo.rawXhrPost({
-						url: "Class/User",
+						url: "User/",
 						postData: dojox.json.ref.toJson({
 							method:"grantAccess",
 							params:[username, selectedItem || {__id:activeStore.target + '/'}, accessLevel],
@@ -158,14 +164,24 @@ function startExplorer(){
 				}
 			}
 		});
+		function signin(){
+			dojo.require("persevere.Login");
+			dojo.addOnLoad(function(){
+			    var login = new persevere.Login({onLoginSuccess: function(){
+			    	location.reload();
+			    }});
+			    dojo.body().appendChild(login.domNode);
+			    login.startup();
+			});
+		}
 		function createSignInButton(){
 			//creates the signin/signout button, now or later
 			if(username){
 				addButton("Sign-out",function(){
 					if(confirm("Are you sure you want to sign out?")){
 					    dojo.xhrPost({
-							url: "Class/User",
-							postData: dojo.toJson({method: "authenticate", id:"login", params:[null,null]}),
+							url: "User/",
+							postData: dojo.toJson({method: "authenticate", id:"login", user: null, password: null}),
 							handleAs: "json"
 					    }).addCallback(function(){
 					    	location.reload();
@@ -174,12 +190,7 @@ function startExplorer(){
 				});
 			}else{
 				addButton("Sign-in",function(){
-					dojo.require("persevere.Login");
-				    var login = new persevere.Login({onLoginSuccess: function(){
-				    	location.reload();
-				    }});
-				    dojo.body().appendChild(login.domNode);
-				    login.startup();
+					signin();
 				});			
 			}
 		}
@@ -215,4 +226,6 @@ function startExplorer(){
 		});
 		
 }
+
+
 
